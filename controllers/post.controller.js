@@ -1,5 +1,6 @@
 import Post from "../models/post.model.js";
 
+// Thêm bài viết
 export const createPost = async (req, res) => {
   // req.user được tạo ra từ middleware verifyToken
   const newPost = new Post({ ...req.body, userId: req.user.id });
@@ -8,5 +9,75 @@ export const createPost = async (req, res) => {
     res.status(200).json(savedPost);
   } catch (err) {
     res.status(500).json("Lỗi khi đăng bài: " + err.message);
+  }
+};
+
+// Xoá bài viết
+export const deletePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json("Không tìm thấy bài viết!");
+
+    // Kiểm tra xem người xóa có phải chủ bài viết không
+    if (post.userId === req.user.id) {
+      await post.deleteOne();
+      res.status(200).json("Xóa bài viết thành công!");
+    } else {
+      res.status(403).json("Bạn chỉ có thể xóa bài viết của chính mình!");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Sửa bài viết
+export const updatePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json("Không tìm thấy bài viết!");
+
+    if (post.userId === req.user.id) {
+      const updatedPost = await Post.findByIdAndUpdate(
+        req.params.id,
+        { $set: req.body },
+        { new: true } // Trả về dữ liệu mới sau khi sửa
+      );
+      res.status(200).json(updatedPost);
+    } else {
+      res.status(403).json("Bạn chỉ có thể sửa bài viết của chính mình!");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Lấy tất cả bài viết
+export const getAllPosts = async (req, res) => {
+  try {
+    // find() lấy hết, sort({createdAt: -1}) để bài mới nhất hiện lên đầu
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json("Không thể lấy bài viết: " + err.message);
+  }
+};
+
+export const likePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json("Không tìm thấy bài viết!");
+
+    // Kiểm tra xem user đã like bài này chưa
+    if (!post.likes.includes(req.user.id)) {
+      // Chưa like -> Thêm userId vào mảng likes
+      await post.updateOne({ $push: { likes: req.user.id } });
+      res.status(200).json("Đã thích bài viết!");
+    } else {
+      // Đã like rồi -> Xóa userId khỏi mảng likes (Unlike)
+      await post.updateOne({ $pull: { likes: req.user.id } });
+      res.status(200).json("Đã bỏ thích bài viết!");
+    }
+  } catch (err) {
+    res.status(500).json(err);
   }
 };

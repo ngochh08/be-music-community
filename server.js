@@ -4,7 +4,7 @@ import post from "./api/post.route.js";
 import authRoute from "./api/auth.route.js";
 
 const app = express();
-app.use(cors());
+app.use(cors()); // Cho phép tất cả các nguồn truy cập
 app.use(express.json());
 
 // 1. Các route hợp lệ

@@ -13,15 +13,27 @@ export const register = async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(req.body.password, salt);
 
-    // 3. Tạo User mới
+    // 3. Tạo link avatar ngẫu nhiên
+    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+      req.body.displayName
+    )}`;
+
+    // 4. Tạo User mới
     const newUser = new User({
       ...req.body,
       password: hashedPassword,
+      avatar: avatarUrl,
     });
 
-    // 4. Lưu vào Database
-    await newUser.save();
-    res.status(201).json("Đăng ký thành công! Giờ bạn có thể đăng nhập.");
+    const savedUser = await newUser.save();
+
+    // Tự động tạo luôn Token để Frontend đăng nhập ngay lập tức
+    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET);
+
+    const { password, ...otherDetails } = savedUser._doc;
+
+    // Trả về object chứa cả token và thông tin user giống như hàm login
+    res.status(201).json({ token, ...otherDetails });
   } catch (err) {
     res.status(500).json("Lỗi đăng ký: " + err.message);
   }

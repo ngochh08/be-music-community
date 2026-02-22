@@ -6,7 +6,11 @@ export const createPost = async (req, res) => {
   const newPost = new Post({ ...req.body, userId: req.user.id });
   try {
     const savedPost = await newPost.save();
-    res.status(200).json(savedPost);
+    const fullPost = await Post.findById(savedPost._id).populate(
+      "userId",
+      "displayName avatar"
+    );
+    res.status(200).json(fullPost);
   } catch (err) {
     res.status(500).json("Lỗi khi đăng bài: " + err.message);
   }
@@ -55,7 +59,10 @@ export const updatePost = async (req, res) => {
 export const getAllPosts = async (req, res) => {
   try {
     // find() lấy hết, sort({createdAt: -1}) để bài mới nhất hiện lên đầu
-    const posts = await Post.find().sort({ createdAt: -1 });
+    // Tìm tất cả bài viết và tự động lấy displayName, avatar từ bảng User dựa trên userId
+    const posts = await Post.find()
+      .populate("userId", "displayName avatar")
+      .sort({ createdAt: -1 });
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json("Không thể lấy bài viết: " + err.message);

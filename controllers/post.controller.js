@@ -22,8 +22,13 @@ export const deletePost = async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json("Không tìm thấy bài viết!");
 
-    // Kiểm tra xem người xóa có phải chủ bài viết không
-    if (post.userId === req.user.id) {
+    // Lấy đúng cái ID ra để so sánh và ép về String
+    const postOwnerId = post.userId._id
+      ? post.userId._id.toString()
+      : post.userId.toString();
+    const currentUserId = req.user.id.toString();
+
+    if (postOwnerId === currentUserId) {
       await post.deleteOne();
       res.status(200).json("Xóa bài viết thành công!");
     } else {
@@ -40,12 +45,17 @@ export const updatePost = async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json("Không tìm thấy bài viết!");
 
-    if (post.userId === req.user.id) {
+    const postOwnerId = post.userId._id
+      ? post.userId._id.toString()
+      : post.userId.toString();
+    const currentUserId = req.user.id.toString();
+
+    if (postOwnerId === currentUserId) {
       const updatedPost = await Post.findByIdAndUpdate(
         req.params.id,
         { $set: req.body },
-        { new: true } // Trả về dữ liệu mới sau khi sửa
-      );
+        { new: true }
+      ).populate("userId"); // Luôn populate để trả về đầy đủ thông tin user cho FE cập nhật state
       res.status(200).json(updatedPost);
     } else {
       res.status(403).json("Bạn chỉ có thể sửa bài viết của chính mình!");

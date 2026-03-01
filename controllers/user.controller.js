@@ -20,3 +20,29 @@ export const getUserProfile = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: err });
   }
 };
+
+export const updateUserProfile = async (req, res) => {
+  // 1. Kiểm tra quyền: Người dùng chỉ được sửa profile của chính mình
+  if (req.params.id !== req.body.userId) {
+    return res.status(403).json("Bạn chỉ có thể cập nhật tài khoản của mình!");
+  }
+
+  try {
+    // 2. Xử lý dữ liệu cập nhật
+    const updateData = {};
+    if (req.body.displayName) updateData.displayName = req.body.displayName;
+    if (req.body.avatar) updateData.avatar = req.body.avatar;
+
+    // 3. Cập nhật vào Database và lấy dữ liệu mới nhất
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateData },
+      { new: true } // Trả về object đã được cập nhật
+    ).select("-password"); // Không trả về mật khẩu cho Frontend
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.error("Lỗi cập nhật user:", err);
+    res.status(500).json(err);
+  }
+};

@@ -70,10 +70,22 @@ export const getAllPosts = async (req, res) => {
   try {
     // find() lấy hết, sort({createdAt: -1}) để bài mới nhất hiện lên đầu
     // Tìm tất cả bài viết và tự động lấy displayName, avatar từ bảng User dựa trên userId
-    const posts = await Post.find()
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const posts = await Post.find({
+      desc: { $regex: req.query.keyword, $options: "i" },
+    })
       .populate("userId", "displayName avatar")
+      .skip(skip)
+      .limit(limit)
       .sort({ createdAt: -1 });
-    res.status(200).json(posts);
+    const totalPosts = await Post.countDocuments();
+    res.status(200).json({
+      posts,
+      totalPosts,
+    });
   } catch (err) {
     res.status(500).json("Không thể lấy bài viết: " + err.message);
   }

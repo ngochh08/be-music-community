@@ -100,11 +100,13 @@ export const likePost = async (req, res) => {
     if (!post.likes.includes(req.user.id)) {
       // Chưa like -> Thêm userId vào mảng likes
       await post.updateOne({ $push: { likes: req.user.id } });
-      res.status(200).json("Đã thích bài viết!");
+      res.status(200).json({ message: "Đã thích bài viết!", isLiked: true });
     } else {
       // Đã like rồi -> Xóa userId khỏi mảng likes (Unlike)
       await post.updateOne({ $pull: { likes: req.user.id } });
-      res.status(200).json("Đã bỏ thích bài viết!");
+      res
+        .status(200)
+        .json({ message: "Đã bỏ thích bài viết!", isLiked: false });
     }
   } catch (err) {
     res.status(500).json(err);

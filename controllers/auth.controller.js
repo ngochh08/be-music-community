@@ -14,7 +14,7 @@ export const register = async (req, res) => {
     const hashedPassword = bcrypt.hashSync(req.body.password, salt);
 
     // 3. Tạo link avatar ngẫu nhiên
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+    const avatarUrl = `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(
       req.body.displayName
     )}`;
 

@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 async function main() {
   dotenv.config();
   // const client = new mongodb.MongoClient(process.env.DB_URI);
-  const port = process.env.PORT || 8000;
+  const port = process.env.PORT || 3000;
   try {
     // Connect to the MongoDB cluster
     await mongoose.connect(process.env.DB_URI);

@@ -10,7 +10,7 @@ async function main() {
     // Connect to the MongoDB cluster
     await mongoose.connect(process.env.DB_URI);
     console.log("Connected to MongoDB");
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
       console.log("Server is running on port: " + port);
     });
   } catch (e) {

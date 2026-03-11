@@ -59,7 +59,9 @@ export const login = async (req, res) => {
       return res.status(400).json("Sai mật khẩu. Vui lòng thử lại!");
 
     // Tạo Token (Lấy chuỗi bí mật từ file .env)
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRED_TIME,
+    });
 
     // Không gửi mật khẩu về frontend
     const { password, ...otherDetails } = user._doc;
